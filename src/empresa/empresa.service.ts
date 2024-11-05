@@ -10,8 +10,8 @@ import {
 import { Empresa } from './entities/empresa.entity';
 import { AxiosResponse } from 'axios';
 import clienteAxios from 'axios';
+import { baseURL } from 'src/services/axios/config';
 
-const baseURL = 'http://ec2-54-145-211-254.compute-1.amazonaws.com:3000';
 
 @Injectable()
 export class EmpresaService {

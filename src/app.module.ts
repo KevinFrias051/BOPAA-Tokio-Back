@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { EmpresaModule } from './empresa/empresa.module';
 import { EmpresaControllers } from './empresa/empresa.controller';
 import { EmpresaService } from './empresa/empresa.service';
+import { CotizacionesModule } from './cotizacion/cotizacion.module';
 
 @Module({
   imports: [TypeOrmModule.forRoot({
@@ -18,7 +19,8 @@ import { EmpresaService } from './empresa/empresa.service';
     entities: ['dist/**/*.entity.js'],
     logging: 'all',
   }),
-  EmpresaModule
+  EmpresaModule,
+  CotizacionesModule,
 ],
   controllers: [AppController],
   providers: [AppService],

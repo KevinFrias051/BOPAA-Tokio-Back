@@ -1,14 +1,10 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Cotizacion } from 'src/cotizacion/entities/cotizacion.entity';
+import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 
 @Entity('empresas')
 export class Empresa {
-  @PrimaryGeneratedColumn({
-    type: 'int',
-  })
-  public idEmpresa: number;
-
-  @Column({
-    name: 'codEmpresa',
+  @PrimaryColumn({
+    type: 'varchar',
     length: 100,
   })
   public codEmpresa: string;
@@ -33,15 +29,14 @@ export class Empresa {
   })
   public cantidadAcciones: number;
 
+  @OneToMany(() => Cotizacion, (cotizacion) => cotizacion.codEmpresa)
+  public cotizaciones: Cotizacion[];
+
   constructor(codEmpresa: string, nombreEmpresa: string , cotizationInicial: number, cantidadAcciones: number) {
     this.codEmpresa = codEmpresa;
     this.nombreEmpresa = nombreEmpresa;
-    this.cotizationInicial=cotizationInicial;
-    this.cantidadAcciones=cantidadAcciones;
-  }
-
-  public getId(): number {
-    return this.idEmpresa;
+    this.cotizationInicial = cotizationInicial;
+    this.cantidadAcciones = cantidadAcciones;
   }
 
   public getcodEmpresa(): string {
