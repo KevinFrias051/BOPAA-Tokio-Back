@@ -6,7 +6,7 @@ export class Cotizacion {
   @PrimaryGeneratedColumn({
     type: 'bigint',
   })
-  private id: number;
+  public id: number;
 
   @Column({
     name: 'fecha',
@@ -23,11 +23,6 @@ export class Cotizacion {
   private hora: string;
 
   @Column({
-    type: 'date',
-  })
-  private dateUTC: Date;
-
-  @Column({
     name: 'cotization',
     type: 'decimal',
     precision: 7,
@@ -35,13 +30,19 @@ export class Cotizacion {
   })
   public cotizacion: number;
 
-  @ManyToOne(() => Empresa, (empresa) => empresa.codEmpresa)
+  // Relación ManyToOne con Empresa
+  @ManyToOne(() => Empresa, (empresa) => empresa.cotizaciones)
   @JoinColumn({
     name: 'codEmpresa',
     referencedColumnName: 'codEmpresa',
   })
   public codEmpresa: Empresa;
 
-
-  constructor() {}
+  constructor(id: number, fecha: string, hora: string, cotizacion: number, codEmpresa: Empresa) {
+    this.id = id;
+    this.fecha = fecha;
+    this.hora = hora;
+    this.cotizacion = cotizacion;
+    this.codEmpresa = codEmpresa;
+  }
 }

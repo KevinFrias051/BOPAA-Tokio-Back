@@ -43,7 +43,7 @@ export class EmpresaService {
 
   async saveEmpresaDbByCod(codEmpresa:string): Promise<Empresa> {
     try {
-      if(this.findEmpresaDbByCod(codEmpresa) == null){
+      if(await this.findEmpresaDbByCod(codEmpresa) == null){
         const respuesta: AxiosResponse<any, any> = await clienteAxios.get(`${baseURL}/empresas/${codEmpresa}/details`)
         const empresa = new Empresa(
           respuesta.data.codempresa,

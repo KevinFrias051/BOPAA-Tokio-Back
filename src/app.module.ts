@@ -3,8 +3,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { EmpresaModule } from './empresa/empresa.module';
-import { EmpresaControllers } from './empresa/empresa.controller';
-import { EmpresaService } from './empresa/empresa.service';
 import { CotizacionesModule } from './cotizacion/cotizacion.module';
 
 @Module({
