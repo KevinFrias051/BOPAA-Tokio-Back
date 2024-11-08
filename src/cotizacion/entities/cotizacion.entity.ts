@@ -13,14 +13,14 @@ export class Cotizacion {
     type: 'varchar',
     precision: 10,
   })
-  private fecha: string;
+  public fecha: string;
 
   @Column({
     name: 'hora',
     type: 'varchar',
     precision: 5,
   })
-  private hora: string;
+  public hora: string;
 
   @Column({
     name: 'cotization',
