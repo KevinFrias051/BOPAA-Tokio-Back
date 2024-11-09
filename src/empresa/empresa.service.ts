@@ -65,6 +65,21 @@ export class EmpresaService {
     }
   }
 
+  async saveEmpresas(): Promise<void> {
+    const arrCodigosEmpresas = ['GOOGL', 'NVDA', 'NESN.SW', 'KO', 'BA', 'WMT', 'SHEL'];
+
+    try {
+        // Ciclo secuencial para guardar las empresas
+        for (const codEmpresa of arrCodigosEmpresas) {
+            await this.saveEmpresaDbByCod(codEmpresa);  // Llamamos a la función asincrónica para cada empresa
+        }
+
+        console.log('Todas las empresas fueron guardadas correctamente.');
+    } catch (error) {
+        console.error('Error al guardar las empresas:', error);
+    }
+}
+
   async findEmpresaDbByCod(codEmp:string): Promise<Empresa>{
     try {
       const empresas:Empresa=await this.empresaRepository.findOne({

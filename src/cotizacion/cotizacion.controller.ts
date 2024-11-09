@@ -59,5 +59,33 @@ export class CotizacionesController {
     }
   }
 
+  @Get('/participacionBolsa')
+  public async getCotizacion(): Promise<any> {
+    //const arrCodigosEmpresas = ['nvda'];
+
+    let arr: {empresa: string, participacion: number, tipo: string}[] = [];
+
+    const arrCodigosEmpresas = ['GOOGL', 'NVDA', 'NESN.SW', 'KO', 'BA', 'WMT', 'SHEL'];
+    
+    for (const codigo of arrCodigosEmpresas) {
+      const participacion = await this.cotizacionesService.calcularParticipacion(codigo,'DIA');
+      arr.push({
+        empresa: codigo,
+        participacion: parseFloat(participacion.toFixed(2)),
+        tipo: "DIA"
+      });
+    }
+    for (const codigo of arrCodigosEmpresas) {
+      const participacion = await this.cotizacionesService.calcularParticipacion(codigo,'MES');
+      arr.push({
+        empresa: codigo,
+        participacion: parseFloat(participacion.toFixed(2)),
+        tipo: "MES"
+      });
+    }
+    console.log(arr);
+    return arr
+  }
+
 
 }

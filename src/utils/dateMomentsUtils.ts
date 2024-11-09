@@ -32,6 +32,24 @@ class DateMomentUtils {
     };
   }
 
+  static quitarDiasAfechaActual(dias: number): IFecha {
+    const date = new Date();
+    date.setDate(date.getDate() - dias); // Restar los días especificados
+    date.setMinutes(0);
+    
+    const fecha = date.toISOString();
+    const horaTz = momentTZ.tz(
+      `${fecha}`,
+      DateMomentUtils.TIMEZONE,
+    );
+    
+    const fechaStr = horaTz.format();
+    return {
+      fecha: fechaStr.substring(0, 10),
+      hora: fechaStr.substring(11, 16),
+    };
+}
+
 
   //FECHA YYYY-MM-DD T HH-MM
   static gmtMasNueve(fecha: string): string {
