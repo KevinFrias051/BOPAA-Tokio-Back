@@ -62,7 +62,7 @@ export class CotizacionesController {
   @Get('/participacionBolsa')
   public async getCotizacion(): Promise<any> {
     //const arrCodigosEmpresas = ['nvda'];
-
+    
     let arr: {empresa: string, participacion: number, tipo: string}[] = [];
 
     const arrCodigosEmpresas = ['GOOGL', 'NVDA', 'NESN.SW', 'KO', 'BA', 'WMT', 'SHEL'];

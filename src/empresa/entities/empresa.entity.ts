@@ -29,7 +29,6 @@ export class Empresa {
   })
   public cantidadAcciones: number;
 
-  // Relación OneToMany con Cotizacion
   @OneToMany(() => Cotizacion, (cotizacion) => cotizacion.codEmpresa)
   public cotizaciones: Cotizacion[];
 

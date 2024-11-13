@@ -5,7 +5,6 @@ import { IFecha } from 'src/model/fecha.model';
 class DateMomentUtils {
   static TIMEZONE: string = 'Asia/Tokyo';
   static horasHabiles = [
-    '08:00',
     '09:00',
     '10:00',
     '11:00',
@@ -13,7 +12,6 @@ class DateMomentUtils {
     '13:00',
     '14:00',
     '15:00',
-    '16:00',
   ];
 
   //Transforma Utc en Gmt+9
@@ -109,6 +107,25 @@ class DateMomentUtils {
     return {
       fecha: fechaStr.substring(0, 10),
       hora: fechaStr.substring(11, 16),
+    };
+  }
+
+  // Método para convertir fecha y hora GMT+9 a UTC
+  static convertirAUTC(fecha: string, hora: string): { fecha: string, hora: string } {
+    const fechaHora = `${fecha}T${hora}:00`;  // Formato de fecha y hora
+    const fechaObj = new Date(fechaHora); // Crear el objeto Date (esto considera la zona horaria local)
+    
+    // Convertir la fecha de GMT+9 a UTC (el Date object en JavaScript ya está trabajando en UTC)
+    const fechaUtc = new Date(fechaObj.toISOString()); // Esto se convierte en UTC automáticamente
+    
+    // Extraer la fecha y hora en formato UTC
+    const fechaUtcStr = fechaUtc.toISOString();
+    const fechaUtcFinal = fechaUtcStr.substring(0, 10);  // YYYY-MM-DD
+    const horaUtcFinal = fechaUtcStr.substring(11, 16);  // HH:MM
+    
+    return {
+      fecha: fechaUtcFinal,
+      hora: horaUtcFinal
     };
   }
 

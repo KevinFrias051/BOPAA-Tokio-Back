@@ -4,6 +4,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { EmpresaModule } from './empresa/empresa.module';
 import { CotizacionesModule } from './cotizacion/cotizacion.module';
+import { IndiceCotizacionModule } from './indiceCotizaciones/indiceCotizacion.module';
+import { IndiceModule } from './indice/indice.module';
 
 @Module({
   imports: [TypeOrmModule.forRoot({
@@ -19,6 +21,8 @@ import { CotizacionesModule } from './cotizacion/cotizacion.module';
   }),
   EmpresaModule,
   CotizacionesModule,
+  IndiceCotizacionModule,
+  IndiceModule,
 ],
   controllers: [AppController],
   providers: [AppService],

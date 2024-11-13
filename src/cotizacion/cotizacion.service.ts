@@ -42,13 +42,23 @@ export class CotizacionesService {
           take: 1,
         })
       const dateCotizacion = lastCotizacion[0];
-      if (!dateCotizacion || !dateCotizacion.fecha) {
+    if (!dateCotizacion || !dateCotizacion.fecha) {
         const fecha: IFecha = DateMomentUtils.transformGMTFechaHora('2024-01-01', '00:00');
         return fecha;
       } else {
         const fecha: IFecha = DateMomentUtils.transformGMTFechaHora(dateCotizacion.fecha, dateCotizacion.hora);
         return fecha;
       }
+
+      /*   SOLO PARA COMPROBAR SI FALTAN COTIZACIONES A GUARDAR
+      if (!dateCotizacion || !dateCotizacion.fecha) {
+        const fecha: IFecha = DateMomentUtils.transformGMTFechaHora(dateCotizacion.fecha, dateCotizacion.hora);
+        return fecha;
+      } else {
+        const fecha: IFecha = DateMomentUtils.transformGMTFechaHora('2024-01-01', '00:00');
+        return fecha;
+      }
+        */
     } catch (error) {
       console.error("Error al encontrar la última cotización:", error);
       return null;
@@ -105,19 +115,21 @@ export class CotizacionesService {
     //filtrado hora local
     const respuesta: AxiosResponse<any, any> = await clienteAxios.get(`${baseURL}/empresas/${codEmpresa}
       /cotizaciones?fechaDesde=${grFecha}&fechaHasta=${lrFecha}`);
-    respuesta.data.forEach(cotizacion => {
-      const fechaGmt = DateMomentUtils.transformGMTFechaHora(cotizacion.fecha, cotizacion.hora)
-      if (DateMomentUtils.horasHabiles.includes(fechaGmt.hora)) {
-        const newCotizacion = new Cotizacion(
-          cotizacion.id,
-          fechaGmt.fecha,
-          fechaGmt.hora,
-          cotizacion.cotization,
-          empresa
-        )
-        this.saveCotizacionDb(newCotizacion)
-      }
-    });
+      const promesasGuardado = respuesta.data.map(async (cotizacion) => {
+        const fechaGmt = DateMomentUtils.transformGMTFechaHora(cotizacion.fecha, cotizacion.hora)
+        if (DateMomentUtils.horasHabiles.includes(fechaGmt.hora)) {
+          const newCotizacion = new Cotizacion(
+            cotizacion.id,
+            fechaGmt.fecha,
+            fechaGmt.hora,
+            cotizacion.cotization,
+            empresa
+          );
+          await this.saveCotizacionDb(newCotizacion);
+        }
+      });
+  
+      await Promise.all(promesasGuardado);
     return respuesta.data;
 
   }
@@ -180,6 +192,7 @@ export class CotizacionesService {
     const totalDelMercado = await this.calcularTotalDelMercado(seleccion);
     const participacionEmpresa = (capasitacionDeMercado / totalDelMercado) * 100;
     console.log(`participacionEmpresa ${codEmp} del ${seleccion}:`, participacionEmpresa)
+    
     return participacionEmpresa;
   }
 
@@ -299,7 +312,7 @@ export class CotizacionesService {
       });
 
   
-      //console.log(lastCotizacions)
+
 
       // Si aún no hay cotizaciones, retorna null
       if (lastCotizacions.length === 0) {
@@ -329,7 +342,6 @@ export class CotizacionesService {
     console.log(`cantidadAcciones ${codEmp} :`,empresa.cantidadAcciones)
     return empresa.cantidadAcciones
   }
-
 
 
 }
