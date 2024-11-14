@@ -30,8 +30,8 @@ export class IndiceCotizacionService {
         where: { codeIndice: Equal('TSE') },
         order: { fecha: 'DESC', hora: 'DESC' },
       });
-  
-      // Si no hay índices, crear uno inicial con los datos especificados
+      
+      // Si no hay índices, crear uno inicial con los datos especificos
       if (!ultimoIndice) {
         const indiceBase = await this.indiceRepositoryBase.findOne({ where: { codeIndice: 'TSE' } });
         if (!indiceBase) throw new Error("No se encontró el índice base con codeIndice 'TSE' en la base de datos.");
@@ -65,11 +65,15 @@ export class IndiceCotizacionService {
         if (!cotizacionesPorHora[fechaHora]) cotizacionesPorHora[fechaHora] = [];
         cotizacionesPorHora[fechaHora].push(cotizacion);
       });
+      console.log('cotizacionesPorHora:',cotizacionesPorHora)
   
       for (const fechaHora in cotizacionesPorHora) {
         const cotizacionesDeLaHora = cotizacionesPorHora[fechaHora];
+        console.log('cotizaciones De LaHora:',cotizacionesDeLaHora)
         const valorIndiceAnterior = ultimoIndice.indiceCotizacion;
+        console.log('valor Indice Anterior:',valorIndiceAnterior)
         const cambioPromedioIndice = await this.calcularCambioPromedioIndice();
+        console.log('cambio Promedio Indice:',cambioPromedioIndice)
         const valorIndice = parseFloat((valorIndiceAnterior * (1 + (cambioPromedioIndice / 100))).toFixed(2));
   
         const fechaCotizacion = cotizacionesDeLaHora[0].fecha;
@@ -79,8 +83,7 @@ export class IndiceCotizacionService {
         const nuevoIndice = new IndiceCotizacion(fechaCotizacion, horaCotizacion, valorIndice, indiceBase);
         await this.indiceRepository.save(nuevoIndice);
         console.log(`Índice consolidado guardado para fecha: ${nuevoIndice.fecha} y hora: ${nuevoIndice.hora}`);
-  
-        // Actualizar `ultimoIndice` para la siguiente iteración
+
         ultimoIndice = nuevoIndice;
       }
     } catch (error) {

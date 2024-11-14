@@ -110,24 +110,7 @@ class DateMomentUtils {
     };
   }
 
-  // Método para convertir fecha y hora GMT+9 a UTC
-  static convertirAUTC(fecha: string, hora: string): { fecha: string, hora: string } {
-    const fechaHora = `${fecha}T${hora}:00`;  // Formato de fecha y hora
-    const fechaObj = new Date(fechaHora); // Crear el objeto Date (esto considera la zona horaria local)
-    
-    // Convertir la fecha de GMT+9 a UTC (el Date object en JavaScript ya está trabajando en UTC)
-    const fechaUtc = new Date(fechaObj.toISOString()); // Esto se convierte en UTC automáticamente
-    
-    // Extraer la fecha y hora en formato UTC
-    const fechaUtcStr = fechaUtc.toISOString();
-    const fechaUtcFinal = fechaUtcStr.substring(0, 10);  // YYYY-MM-DD
-    const horaUtcFinal = fechaUtcStr.substring(11, 16);  // HH:MM
-    
-    return {
-      fecha: fechaUtcFinal,
-      hora: horaUtcFinal
-    };
-  }
+  
 
 }
 

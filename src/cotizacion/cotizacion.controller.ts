@@ -50,6 +50,7 @@ export class CotizacionesController {
     return this.cotizacionesService.getCotizacionesxDiaCodGMT(codEmpresa, fecha);
   }
 
+    //BUSCA Y GUARDA TODAS LAS COTIZACIONES DE GEMPRESA EN DB
   @Get('/last')
   public async getLastCotizacion(): Promise<void> {
     const arrCodigosEmpresas = ['GOOGL', 'NVDA', 'NESN.SW', 'KO', 'BA', 'WMT', 'SHEL'];
@@ -79,13 +80,16 @@ export class CotizacionesController {
       const participacion = await this.cotizacionesService.calcularParticipacion(codigo,'MES');
       arr.push({
         empresa: codigo,
-        participacion: parseFloat(participacion.toFixed(2)),
+        participacion: parseFloat(participacion.toFixed(2)),                                                                                               
         tipo: "MES"
       });
     }
     console.log(arr);
     return arr
   }
+  
 
+  //falta postear mis indices 
+  //falta enviar al front todos los indices
 
 }

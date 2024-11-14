@@ -6,6 +6,9 @@ import { EmpresaModule } from './empresa/empresa.module';
 import { CotizacionesModule } from './cotizacion/cotizacion.module';
 import { IndiceCotizacionModule } from './indiceCotizaciones/indiceCotizacion.module';
 import { IndiceModule } from './indice/indice.module';
+import { GenDataService } from './services/gendata.cron.service';
+import { ScheduleModule } from '@nestjs/schedule';
+
 
 @Module({
   imports: [TypeOrmModule.forRoot({
@@ -19,12 +22,13 @@ import { IndiceModule } from './indice/indice.module';
     entities: ['dist/**/*.entity.js'],
     logging: 'all',
   }),
+  ScheduleModule.forRoot(),
   EmpresaModule,
   CotizacionesModule,
   IndiceCotizacionModule,
   IndiceModule,
 ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService,GenDataService],
 })
 export class AppModule {}

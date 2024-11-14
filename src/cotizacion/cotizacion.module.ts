@@ -9,6 +9,7 @@ import { Empresa } from 'src/empresa/entities/empresa.entity';
   imports: [TypeOrmModule.forFeature([Cotizacion,Empresa])],
   controllers: [CotizacionesController],
   providers: [CotizacionesService],
+  exports: [CotizacionesService],
 })
 
 export class CotizacionesModule {}
