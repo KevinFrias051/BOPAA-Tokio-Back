@@ -8,26 +8,28 @@ import { baseURL } from 'src/Services/axios/config';
 import DateMomentUtils from 'src/utils/dateMomentsUtils';
 import { Empresa } from 'src/empresa/entities/empresa.entity';
 import { IFecha } from 'src/model/fecha.model';
-import { CONFIGURABLE_MODULE_ID } from '@nestjs/common/module-utils/constants';
+
 
 @Injectable()
 export class CotizacionesService {
-  constructor(@InjectRepository(Cotizacion)
-  private readonly cotizacionRepository: Repository<Cotizacion>,
+  constructor(
+    @InjectRepository(Cotizacion)
+    private readonly cotizacionRepository: Repository<Cotizacion>,
+
     @InjectRepository(Empresa)
     private readonly empresaRepository: Repository<Empresa>) { }
 
   //TRAE LA FECHA Y HORA DE LA ULTIMA COTIZACION DE GMPRESA
   public async lastDateCotizacionGmpresa(): Promise<IFecha> {
     const fecha = DateMomentUtils.getLastDateCotizacion()
-    console.log('FECHA ULTIMA COTIZACION GEMPRESA:', fecha)
+    //console.log('FECHA ULTIMA COTIZACION GEMPRESA:', fecha)
     return fecha;
   }
 
   //RETORNA LA FECHA DE LA ULTIMA COTZACION GUARDADA EN DB DE UNA EMPRESA
   async findLastCotizacionDb(codEmp: string): Promise<IFecha> {
     try {
-      console.log('codEmp:', codEmp)
+      //console.log('codEmp:', codEmp)
       const empresa = await this.empresaRepository.findOne({
         where: { codEmpresa: codEmp },
       })
@@ -37,12 +39,14 @@ export class CotizacionesService {
       }
       const lastCotizacion: Cotizacion[] = await this.cotizacionRepository.find(
         {
-          where: { codEmpresa: Equal(empresa.codEmpresa) },
+          where: { empresa: Equal(empresa.codEmpresa) },
           order: { id: "DESC" },
           take: 1,
         })
+        //console.log(lastCotizacion)
       const dateCotizacion = lastCotizacion[0];
-    if (!dateCotizacion || !dateCotizacion.fecha) {
+    
+      if (!dateCotizacion || !dateCotizacion.fecha) {
         const fecha: IFecha = DateMomentUtils.transformGMTFechaHora('2024-01-01', '00:00');
         return fecha;
       } else {
@@ -50,15 +54,15 @@ export class CotizacionesService {
         return fecha;
       }
 
-      /*   SOLO PARA COMPROBAR SI FALTAN COTIZACIONES A GUARDAR
-      if (!dateCotizacion || !dateCotizacion.fecha) {
+      //   SOLO PARA COMPROBAR SI FALTAN COTIZACIONES A GUARDAR
+      /* if (!dateCotizacion || !dateCotizacion.fecha) {
         const fecha: IFecha = DateMomentUtils.transformGMTFechaHora(dateCotizacion.fecha, dateCotizacion.hora);
         return fecha;
       } else {
         const fecha: IFecha = DateMomentUtils.transformGMTFechaHora('2024-01-01', '00:00');
         return fecha;
-      }
-        */
+      } */
+        
     } catch (error) {
       console.error("Error al encontrar la última cotización:", error);
       return null;
@@ -81,11 +85,12 @@ export class CotizacionesService {
   public async saveCotizacionDb(cotizacion: Cotizacion) {
     try {
 
-      if (await this.findCotizacionById(cotizacion.id) == null) {
-        const savedCotizacion = await this.cotizacionRepository.save(cotizacion)
+      //if (await this.findCotizacionById(cotizacion.id) == null) {
+      if (await this.findCotizacion(cotizacion) == null) {
+      const savedCotizacion = await this.cotizacionRepository.save(cotizacion)
         return savedCotizacion;
       } else {
-        console.log('La cotizacion ya existe en la base de datos')
+        //console.log('La cotizacion ya existe en la base de datos')
       }
     } catch (error) {
       console.error("Error al guardar la cotizacion:", error);
@@ -105,6 +110,28 @@ export class CotizacionesService {
       throw error;
     }
   }
+
+
+  //CONSULTA A LA DB SI EXISTE UNA COTIZACION CON fecha, hora y codigo empresa
+  async findCotizacion(cotizacion: Cotizacion): Promise<Cotizacion | null> {
+    try {
+      // Busca la cotización con base en fecha, hora y empresa
+      const cotizacionEncontrada = await this.cotizacionRepository.findOne({
+        where: {
+          fecha: cotizacion.fecha,
+          hora: cotizacion.hora,
+          empresa: { codEmpresa: cotizacion.empresa.codEmpresa }, // Filtra por la clave foránea
+        },
+        relations: ['empresa'], // Carga la relación de empresa si es necesario
+      });
+  
+      return cotizacionEncontrada || null;
+    } catch (error) {
+      console.error('Error buscando cotización:', error);
+      throw error;
+    }
+  }
+  
 
 
 
@@ -140,10 +167,10 @@ export class CotizacionesService {
   public async saveAllCotizacionesDb(codEmp: string) {
     const fechaUltimaDb = await this.findLastCotizacionDb(codEmp);
     const strUltimaDb = DateMomentUtils.formatFechaHora(fechaUltimaDb)
-    console.log('strUltimaDb:', strUltimaDb)
+    //console.log('strUltimaDb:', strUltimaDb)
     const fechaUltimaGnpresa = await this.lastDateCotizacionGmpresa();
     const strUltimaGnpresa = DateMomentUtils.formatFechaHora(fechaUltimaGnpresa)
-    console.log('strUltimaGnpresa:', strUltimaGnpresa)
+    //console.log('strUltimaGnpresa:', strUltimaGnpresa)
     this.getCotizacionesEntreFechasByCodGMT(codEmp, strUltimaDb, strUltimaGnpresa)
   }
 
@@ -191,7 +218,7 @@ export class CotizacionesService {
     const capasitacionDeMercado = await this.calcularCapasitacionDeMercado(codEmp, seleccion);
     const totalDelMercado = await this.calcularTotalDelMercado(seleccion);
     const participacionEmpresa = (capasitacionDeMercado / totalDelMercado) * 100;
-    console.log(`participacionEmpresa ${codEmp} del ${seleccion}:`, participacionEmpresa)
+    //console.log(`participacionEmpresa ${codEmp} del ${seleccion}:`, participacionEmpresa)
     
     return participacionEmpresa;
   }
@@ -207,7 +234,7 @@ export class CotizacionesService {
 
     const cantidadAcciones = await this.cantidadAcciones(codEmp)
     const capasitacionDeMercado = (promedio * cantidadAcciones)
-    console.log(`capasitacionDeMercado ${codEmp} del ${seleccion}:`,capasitacionDeMercado)
+    //console.log(`capasitacionDeMercado ${codEmp} del ${seleccion}:`,capasitacionDeMercado)
     return capasitacionDeMercado
   }
 
@@ -220,7 +247,7 @@ export class CotizacionesService {
     });
     const resultados = await Promise.all(promesas);
     totalMercado = resultados.reduce((acc, curr) => acc + curr, 0);
-    console.log(`calcular TotalDelMercado del ${seleccion}:`, totalMercado);
+    //console.log(`calcular TotalDelMercado del ${seleccion}:`, totalMercado);
     return totalMercado;
   }
   
@@ -245,7 +272,7 @@ export class CotizacionesService {
       let lastCotizacions = await this.cotizacionRepository.find({
         where: {
           fecha: nowDate.fecha,
-          codEmpresa: Equal(empresa.codEmpresa)
+          empresa: Equal(empresa.codEmpresa)
         },
         order: { id: "ASC" },
       });
@@ -256,7 +283,7 @@ export class CotizacionesService {
         lastCotizacions = await this.cotizacionRepository.find({
           where: {
             fecha: nowDate.fecha,
-            codEmpresa: Equal(empresa.codEmpresa)
+            empresa: Equal(empresa.codEmpresa)
           },
           order: { id: "ASC" },
         });
@@ -273,7 +300,7 @@ export class CotizacionesService {
         total += Number(element.cotizacion)
       }
       const promedio = parseFloat((total / lastCotizacions.length).toFixed(2));
-      console.log(`promedio del DIA ${codEmp} :`,promedio)
+      //console.log(`promedio del DIA ${codEmp} :`,promedio)
 
       return promedio
 
@@ -287,9 +314,9 @@ export class CotizacionesService {
 
   async calcularPromedioMes(codEmp: string): Promise<number> {
     let nowDate = DateMomentUtils.getLastDateCotizacion();
-    console.log(nowDate)
+    //console.log(nowDate)
     let last30Days=DateMomentUtils.quitarDiasAfechaActual(30)
-    console.log(last30Days)
+    //console.log(last30Days)
 
     try {
       //console.log('codEmp:', codEmp);
@@ -305,14 +332,11 @@ export class CotizacionesService {
       // Obtén cotizaciones para la fecha actual
       let lastCotizacions = await this.cotizacionRepository.find({
         where: {
-          codEmpresa: Equal(empresa.codEmpresa),
+          empresa: Equal(empresa.codEmpresa),
           fecha: Between(last30Days.fecha, nowDate.fecha),
         },
         order: { id: "ASC" },
       });
-
-  
-
 
       // Si aún no hay cotizaciones, retorna null
       if (lastCotizacions.length === 0) {
@@ -325,7 +349,7 @@ export class CotizacionesService {
         total += Number(element.cotizacion)
       }
       const promedio = parseFloat((total / lastCotizacions.length).toFixed(2));
-      console.log(`promedio del MES ${codEmp} :`,promedio)
+      //console.log(`promedio del MES ${codEmp} :`,promedio)
 
       return promedio
 
@@ -339,7 +363,7 @@ export class CotizacionesService {
     const empresa = await this.empresaRepository.findOne({
       where: { codEmpresa: codEmp },
     })
-    console.log(`cantidadAcciones ${codEmp} :`,empresa.cantidadAcciones)
+    //console.log(`cantidadAcciones ${codEmp} :`,empresa.cantidadAcciones)
     return empresa.cantidadAcciones
   }
 

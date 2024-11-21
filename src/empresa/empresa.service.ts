@@ -92,5 +92,17 @@ export class EmpresaService {
     }
   }
 
+  async findEmpresas(): Promise<Empresa[]>{
+    console.log('entro a find empresas')
+    try {
+      const empresas:Empresa[]=await this.empresaRepository.find({
+      })
+      return empresas
+    } catch (error) {
+      console.error("Error buscando empresas:", error);
+      throw error;
+    }
+  }
+
 
 }

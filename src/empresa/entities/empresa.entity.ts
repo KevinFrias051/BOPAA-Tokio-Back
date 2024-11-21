@@ -29,7 +29,7 @@ export class Empresa {
   })
   public cantidadAcciones: number;
 
-  @OneToMany(() => Cotizacion, (cotizacion) => cotizacion.codEmpresa)
+  @OneToMany(() => Cotizacion, (cotizacion) => cotizacion.empresa)
   public cotizaciones: Cotizacion[];
 
   constructor(codEmpresa: string, nombreEmpresa: string, cotizationInicial: number, cantidadAcciones: number) {

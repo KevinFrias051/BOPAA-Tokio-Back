@@ -24,13 +24,15 @@ export class GenDataService {
 
   @Cron('1 0 * * * *')
 
-  getLastCotizaciones() {
+  async getLastCotizaciones() {
 
     const arrCodigosEmpresas = ['GOOGL', 'NVDA', 'NESN.SW', 'KO', 'BA', 'WMT', 'SHEL'];
-  
-    for (const codigo of arrCodigosEmpresas) {
-      this.cotizacionesService.saveAllCotizacionesDb(codigo);
-    }
+      await Promise.all(arrCodigosEmpresas.map(async (codigo) => {
+        console.log('codigo:',codigo)
+        await this.cotizacionesService.saveAllCotizacionesDb(codigo);
+      }));
+    
+      console.log('Todas las cotizaciones se han guardado correctamente.');
     //this.cotizacionControler.getLastCotizacion()
   }
 

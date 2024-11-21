@@ -51,14 +51,17 @@ export class CotizacionesController {
   }
 
     //BUSCA Y GUARDA TODAS LAS COTIZACIONES DE GEMPRESA EN DB
-  @Get('/last')
-  public async getLastCotizacion(): Promise<void> {
-    const arrCodigosEmpresas = ['GOOGL', 'NVDA', 'NESN.SW', 'KO', 'BA', 'WMT', 'SHEL'];
-  
-    for (const codigo of arrCodigosEmpresas) {
-      await this.cotizacionesService.saveAllCotizacionesDb(codigo);
+    @Get('/last')
+    public async getLastCotizacion(): Promise<void> {
+      const arrCodigosEmpresas = ['GOOGL', 'NVDA', 'NESN.SW', 'KO', 'BA', 'WMT', 'SHEL'];
+      await Promise.all(arrCodigosEmpresas.map(async (codigo) => {
+        console.log('codigo:',codigo)
+        await this.cotizacionesService.saveAllCotizacionesDb(codigo);
+      }));
+    
+      console.log('Todas las cotizaciones se han guardado correctamente.');
     }
-  }
+    
 
   @Get('/participacionBolsa')
   public async getCotizacion(): Promise<any> {

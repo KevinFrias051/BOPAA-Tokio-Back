@@ -10,7 +10,6 @@ import {
 } from '@nestjs/common';
 import { Empresa } from './entities/empresa.entity';
 import { EmpresaService } from './empresa.service';
-import { IEmpresa } from './model/iEmpresa';
 
 @Controller('empresas')
 
@@ -24,6 +23,11 @@ export class EmpresaControllers {
     return this.empresaService.getEmpresaByCod(codEmp)
   }
 
+  @Get('/getAll')
+  async getAllEmpresas(): Promise<Empresa[]> {
+    return this.empresaService.findEmpresas()
+  }
+
   @Get('/save/:codEmp')
   async saveEmpresa(@Param('codEmp') codEmp: string): Promise<Empresa> {
     return this.empresaService.saveEmpresaDbByCod(codEmp)
@@ -32,6 +36,17 @@ export class EmpresaControllers {
   @Get('/find/:codEmp')
   async findEmpresa(@Param('codEmp') codEmp: string): Promise<Empresa> {
     return this.empresaService.findEmpresaDbByCod(codEmp)
+  }
+
+  @Get('/buscar/db')
+  async findEmpresas(): Promise<Empresa[]> {
+    try {
+      console.log('entro')
+      console.log('this.empresaService.findEmpresas():',await this.empresaService.findEmpresas())
+      return await this.empresaService.findEmpresas();    
+    } catch (error) {
+      console.error(error)
+    }
   }
 
 
