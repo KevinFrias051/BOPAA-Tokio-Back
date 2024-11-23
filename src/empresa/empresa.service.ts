@@ -66,7 +66,7 @@ export class EmpresaService {
   }
 
   async saveEmpresas(): Promise<void> {
-    const arrCodigosEmpresas = ['GOOGL', 'NVDA', 'NESN.SW', 'KO', 'BA', 'WMT', 'SHEL'];
+    const arrCodigosEmpresas = await this.getAllcodsEmpresa()
 
     try {
         // Ciclo secuencial para guardar las empresas
@@ -98,6 +98,22 @@ export class EmpresaService {
       const empresas:Empresa[]=await this.empresaRepository.find({
       })
       return empresas
+    } catch (error) {
+      console.error("Error buscando empresas:", error);
+      throw error;
+    }
+  }
+
+
+  ///////TRAER TODOS LOS CODIGOS DE MIS EMPRESAS
+  async getAllcodsEmpresa():Promise<string[]>{
+    try {
+      const empresas:Empresa[]=await this.empresaRepository.find({ })
+      const arrCodigos: string[] = [];
+      empresas.map((cod)=>{
+        arrCodigos.push(cod.codEmpresa);
+      })
+      return arrCodigos
     } catch (error) {
       console.error("Error buscando empresas:", error);
       throw error;

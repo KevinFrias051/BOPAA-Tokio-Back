@@ -1,12 +1,15 @@
-import { Body, Controller, Get, Param, Query } from "@nestjs/common";
+import { Body, Controller, Get, Logger, Param, Query } from "@nestjs/common";
 import { CotizacionesService } from "./cotizacion.service";
 import { Cotizacion } from "./entities/cotizacion.entity";
 import DateMomentUtils from "src/utils/dateMomentsUtils";
 import { IFecha } from "src/model/fecha.model";
+import { ICotizacionCard } from "./model/iCotizacion";
+import { EmpresaService } from "src/empresa/empresa.service";
 
 @Controller('/cotizaciones')
 export class CotizacionesController {
-  constructor(private cotizacionesService: CotizacionesService) { }
+  constructor(private cotizacionesService: CotizacionesService, private readonly empresaService: EmpresaService) { }
+  private readonly logger = new Logger(CotizacionesController.name);
 
   /* METODOS UTC */
 
@@ -50,47 +53,56 @@ export class CotizacionesController {
     return this.cotizacionesService.getCotizacionesxDiaCodGMT(codEmpresa, fecha);
   }
 
-    //BUSCA Y GUARDA TODAS LAS COTIZACIONES DE GEMPRESA EN DB
-    @Get('/last')
-    public async getLastCotizacion(): Promise<void> {
-      const arrCodigosEmpresas = ['GOOGL', 'NVDA', 'NESN.SW', 'KO', 'BA', 'WMT', 'SHEL'];
-      await Promise.all(arrCodigosEmpresas.map(async (codigo) => {
-        console.log('codigo:',codigo)
-        await this.cotizacionesService.saveAllCotizacionesDb(codigo);
-      }));
-    
-      console.log('Todas las cotizaciones se han guardado correctamente.');
-    }
-    
+  //LLEVAR LA ULTIMA COTIZACION, SI SUBIO O BAJO EN %, EL VALOR ACTUAL, CODIGOEMP
+  @Get('/lastCotizacionEmpByCod/:codEmpresa')
+  public async getlastCotizacion(
+    @Param('codEmpresa') codEmpresa: string
+  ): Promise<ICotizacionCard> {
+    await this.getLastCotizacion()
+    return await this.cotizacionesService.getlastCotizacionCard(codEmpresa)
+  }
+
+
+  //TRAER TODAS LAS COTIZACIONES DE DB PARA UNA EMPRESA
+  @Get('/allCotizacionEmpByCod/:codEmpresa')
+  public async getallCotizacions(
+    @Param('codEmpresa') codEmpresa: string
+  ): Promise<Cotizacion[]> {
+    await this.getLastCotizacion()
+    return await this.cotizacionesService.getallCotizacions(codEmpresa)
+  }
+
+  //BUSCA Y GUARDA TODAS LAS COTIZACIONES DE GEMPRESA EN DB
+  @Get('/last')
+  public async getLastCotizacion(): Promise<void> {
+    const arrCodigosEmpresas = await this.empresaService.getAllcodsEmpresa()
+    await Promise.all(arrCodigosEmpresas.map(async (codigo) => {
+      console.log('codigo:', codigo)
+      await this.cotizacionesService.saveAllCotizacionesDb(codigo);
+    }));
+    this.logger.log('Todas las cotizaciones se han guardado correctamente.');
+  }
+
+
+
+
 
   @Get('/participacionBolsa')
   public async getCotizacion(): Promise<any> {
-    //const arrCodigosEmpresas = ['nvda'];
-    
-    let arr: {empresa: string, participacion: number, tipo: string}[] = [];
-
-    const arrCodigosEmpresas = ['GOOGL', 'NVDA', 'NESN.SW', 'KO', 'BA', 'WMT', 'SHEL'];
-    
-    for (const codigo of arrCodigosEmpresas) {
-      const participacion = await this.cotizacionesService.calcularParticipacion(codigo,'DIA');
-      arr.push({
-        empresa: codigo,
-        participacion: parseFloat(participacion.toFixed(2)),
-        tipo: "DIA"
-      });
-    }
-    for (const codigo of arrCodigosEmpresas) {
-      const participacion = await this.cotizacionesService.calcularParticipacion(codigo,'MES');
-      arr.push({
-        empresa: codigo,
-        participacion: parseFloat(participacion.toFixed(2)),                                                                                               
-        tipo: "MES"
-      });
-    }
-    console.log(arr);
-    return arr
-  }
+    await this.getLastCotizacion();
   
+    const participacionesDia = await this.cotizacionesService.calcularParticipaciones('DIA');
+    const participacionesMes = await this.cotizacionesService.calcularParticipaciones('MES');
+  
+    const resultado = [
+      ...participacionesDia.map(p => ({ ...p, tipo: 'DIA' })),
+      ...participacionesMes.map(p => ({ ...p, tipo: 'MES' })),
+    ];
+  
+    console.log(resultado);
+    return resultado;
+  }
+
 
   //falta postear mis indices 
   //falta enviar al front todos los indices

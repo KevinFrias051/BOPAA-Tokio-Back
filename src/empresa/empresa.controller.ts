@@ -18,10 +18,10 @@ export class EmpresaControllers {
 
 
 
-  @Get('/:codEmp')
+/*   @Get('/:codEmp')
   async getAll(@Param('codEmp') codEmp: string): Promise<Empresa> {
     return this.empresaService.getEmpresaByCod(codEmp)
-  }
+  } */
 
   @Get('/getAll')
   async getAllEmpresas(): Promise<Empresa[]> {
@@ -53,7 +53,7 @@ export class EmpresaControllers {
   @Post('/saveall')
   async saveEmpresasDb(): Promise<void> {
     console.log("Todas las empresas");
-    const arrCodigosEmpresas = ['GOOGL', 'NVDA', 'NESN.SW', 'KO', 'BA', 'WMT', 'SHEL'];
+    const arrCodigosEmpresas = await this.getAllcodsEmpresa()
 
     try {
       for (const codigo of arrCodigosEmpresas) {
@@ -63,5 +63,10 @@ export class EmpresaControllers {
     } catch (error) {
       console.error("Error al guardar las empresas:", error);
     }
+  }
+
+  @Get('/getAllcodsEmpresa')
+  async getAllcodsEmpresa():Promise<string[]>{
+    return await this.empresaService.getAllcodsEmpresa() 
   }
 }

@@ -8,6 +8,8 @@ import { baseURL } from 'src/Services/axios/config';
 import DateMomentUtils from 'src/utils/dateMomentsUtils';
 import { Empresa } from 'src/empresa/entities/empresa.entity';
 import { IFecha } from 'src/model/fecha.model';
+import { ICotizacionCard } from './model/iCotizacion';
+import { EmpresaService } from 'src/empresa/empresa.service';
 
 
 @Injectable()
@@ -17,7 +19,8 @@ export class CotizacionesService {
     private readonly cotizacionRepository: Repository<Cotizacion>,
 
     @InjectRepository(Empresa)
-    private readonly empresaRepository: Repository<Empresa>) { }
+    private readonly empresaRepository: Repository<Empresa>,
+    private readonly empresaService: EmpresaService) { }
 
   //TRAE LA FECHA Y HORA DE LA ULTIMA COTIZACION DE GMPRESA
   public async lastDateCotizacionGmpresa(): Promise<IFecha> {
@@ -43,9 +46,9 @@ export class CotizacionesService {
           order: { id: "DESC" },
           take: 1,
         })
-        //console.log(lastCotizacion)
+      //console.log(lastCotizacion)
       const dateCotizacion = lastCotizacion[0];
-    
+
       if (!dateCotizacion || !dateCotizacion.fecha) {
         const fecha: IFecha = DateMomentUtils.transformGMTFechaHora('2024-01-01', '00:00');
         return fecha;
@@ -62,7 +65,7 @@ export class CotizacionesService {
         const fecha: IFecha = DateMomentUtils.transformGMTFechaHora('2024-01-01', '00:00');
         return fecha;
       } */
-        
+
     } catch (error) {
       console.error("Error al encontrar la última cotización:", error);
       return null;
@@ -71,7 +74,8 @@ export class CotizacionesService {
 
 
   public async getCotizacionesEntreFechasByCodEmpUCT(codEmpresa: string, grFecha: string, lrFecha: string): Promise<Cotizacion[]> {
-    const respuesta: AxiosResponse<any, any> = await clienteAxios.get(`${baseURL}/empresas/${codEmpresa}/cotizaciones?fechaDesde=${grFecha}&fechaHasta=${lrFecha}`);
+    const respuesta: AxiosResponse<any, any> = await clienteAxios.get(`${baseURL}/empresas/${codEmpresa}
+      /cotizaciones?fechaDesde=${grFecha}&fechaHasta=${lrFecha}`);
     return respuesta.data;
     //guardar filtradas y modificadas utc en la db
   }
@@ -85,9 +89,9 @@ export class CotizacionesService {
   public async saveCotizacionDb(cotizacion: Cotizacion) {
     try {
 
-      //if (await this.findCotizacionById(cotizacion.id) == null) {
-      if (await this.findCotizacion(cotizacion) == null) {
-      const savedCotizacion = await this.cotizacionRepository.save(cotizacion)
+      if (await this.findCotizacionById(cotizacion.id) == null) {
+        //if (await this.findCotizacion(cotizacion) == null) {
+        const savedCotizacion = await this.cotizacionRepository.save(cotizacion)
         return savedCotizacion;
       } else {
         //console.log('La cotizacion ya existe en la base de datos')
@@ -124,14 +128,14 @@ export class CotizacionesService {
         },
         relations: ['empresa'], // Carga la relación de empresa si es necesario
       });
-  
+
       return cotizacionEncontrada || null;
     } catch (error) {
       console.error('Error buscando cotización:', error);
       throw error;
     }
   }
-  
+
 
 
 
@@ -142,21 +146,21 @@ export class CotizacionesService {
     //filtrado hora local
     const respuesta: AxiosResponse<any, any> = await clienteAxios.get(`${baseURL}/empresas/${codEmpresa}
       /cotizaciones?fechaDesde=${grFecha}&fechaHasta=${lrFecha}`);
-      const promesasGuardado = respuesta.data.map(async (cotizacion) => {
-        const fechaGmt = DateMomentUtils.transformGMTFechaHora(cotizacion.fecha, cotizacion.hora)
-        if (DateMomentUtils.horasHabiles.includes(fechaGmt.hora)) {
-          const newCotizacion = new Cotizacion(
-            cotizacion.id,
-            fechaGmt.fecha,
-            fechaGmt.hora,
-            cotizacion.cotization,
-            empresa
-          );
-          await this.saveCotizacionDb(newCotizacion);
-        }
-      });
-  
-      await Promise.all(promesasGuardado);
+    const promesasGuardado = respuesta.data.map(async (cotizacion) => {
+      const fechaGmt = DateMomentUtils.transformGMTFechaHora(cotizacion.fecha, cotizacion.hora)
+      if (DateMomentUtils.horasHabiles.includes(fechaGmt.hora)) {
+        const newCotizacion = new Cotizacion(
+          cotizacion.id,
+          fechaGmt.fecha,
+          fechaGmt.hora,
+          cotizacion.cotization,
+          empresa
+        );
+        await this.saveCotizacionDb(newCotizacion);
+      }
+    });
+
+    await Promise.all(promesasGuardado);
     return respuesta.data;
 
   }
@@ -214,49 +218,39 @@ export class CotizacionesService {
   //seleccion 'DIA' para la participacion diaria
   //seleccion 'MES' para la participacion de los ultimos 30 dias
 
-  async calcularParticipacion(codEmp: string, seleccion: string): Promise<number> {
-    const capasitacionDeMercado = await this.calcularCapasitacionDeMercado(codEmp, seleccion);
-    const totalDelMercado = await this.calcularTotalDelMercado(seleccion);
-    const participacionEmpresa = (capasitacionDeMercado / totalDelMercado) * 100;
-    //console.log(`participacionEmpresa ${codEmp} del ${seleccion}:`, participacionEmpresa)
-    
-    return participacionEmpresa;
-  }
+  async calcularParticipaciones(seleccion: string): Promise<{ empresa: string, participacion: number }[]> {
+    const arrCodigosEmpresas = await this.empresaService.getAllcodsEmpresa();
 
+    // Precalcular promedios y cantidad de acciones para todas las empresas
+    const datosEmpresas = await Promise.all(arrCodigosEmpresas.map(async (codEmp) => {
+      const promedio = seleccion === 'DIA'
+        ? await this.calcularPromedioDia(codEmp)
+        : await this.calcularPromedioMes(codEmp);
 
-  async calcularCapasitacionDeMercado(codEmp: string, seleccion: string): Promise<number> {
-    let promedio: number;
-    if (seleccion === 'DIA') {
-      promedio = await this.calcularPromedioDia(codEmp)
-    } else {
-      promedio = await this.calcularPromedioMes(codEmp)
-    }
+      const cantidadAcciones = await this.cantidadAcciones(codEmp);
+      return { codEmp, promedio, cantidadAcciones };
+    }));
 
-    const cantidadAcciones = await this.cantidadAcciones(codEmp)
-    const capasitacionDeMercado = (promedio * cantidadAcciones)
-    //console.log(`capasitacionDeMercado ${codEmp} del ${seleccion}:`,capasitacionDeMercado)
-    return capasitacionDeMercado
-  }
-
-  async calcularTotalDelMercado(seleccion: string): Promise<number> {
+    // Calcular capitalización de mercado de cada empresa y el total del mercado
     let totalMercado = 0;
-    const arrCodEmp = ['GOOGL', 'NVDA', 'NESN.SW', 'KO', 'BA', 'WMT', 'SHEL'];
-    const promesas = arrCodEmp.map(async (element) => {
-      const capasitacionDeMercado = await this.calcularCapasitacionDeMercado(element, seleccion);
-      return capasitacionDeMercado; 
+    const capacitaciones = datosEmpresas.map(({ codEmp, promedio, cantidadAcciones }) => {
+      const capitalizacion = promedio * (cantidadAcciones || 0);
+      totalMercado += capitalizacion;
+      return { codEmp, capitalizacion };
     });
-    const resultados = await Promise.all(promesas);
-    totalMercado = resultados.reduce((acc, curr) => acc + curr, 0);
-    //console.log(`calcular TotalDelMercado del ${seleccion}:`, totalMercado);
-    return totalMercado;
+
+
+    // Calcular participaciones basadas en la capitalización de mercado
+    const participaciones = capacitaciones.map(({ codEmp, capitalizacion }) => ({
+      empresa: codEmp,
+      participacion: parseFloat((totalMercado > 0 ? (capitalizacion / totalMercado) * 100 : 0).toFixed(2)),
+    }));
+
+    return participaciones;
   }
-  
-
-
-
 
   async calcularPromedioDia(codEmp: string): Promise<number | null> {
-    let nowDate = DateMomentUtils.getLastDateCotizacion()
+    const nowDate = DateMomentUtils.getLastDateCotizacion();
 
     try {
       const empresa = await this.empresaRepository.findOne({
@@ -268,58 +262,43 @@ export class CotizacionesService {
         return null;
       }
 
-      // Obtén cotizaciones para la fecha actual
       let lastCotizacions = await this.cotizacionRepository.find({
         where: {
           fecha: nowDate.fecha,
-          empresa: Equal(empresa.codEmpresa)
+          empresa: Equal(codEmp),
         },
         order: { id: "ASC" },
       });
 
-      // Si no se encuentran cotizaciones, intenta con la fecha anterior
       if (lastCotizacions.length === 0) {
-        nowDate = DateMomentUtils.quitarDiasAfechaActual(1);
+        const previousDate = DateMomentUtils.quitarDiasAfechaActual(1);
         lastCotizacions = await this.cotizacionRepository.find({
           where: {
-            fecha: nowDate.fecha,
-            empresa: Equal(empresa.codEmpresa)
+            fecha: previousDate.fecha,
+            empresa: Equal(codEmp),
           },
           order: { id: "ASC" },
         });
       }
 
-      // Si aún no hay cotizaciones, retorna null
       if (lastCotizacions.length === 0) {
-        console.log(`No se encontraron cotizaciones para el código de empresa ${codEmp} en las fechas recientes.`);
+        console.log(`No se encontraron cotizaciones para ${codEmp} en las fechas recientes.`);
         return null;
       }
 
-      let total = 0;
-      for (const element of lastCotizacions) {
-        total += Number(element.cotizacion)
-      }
-      const promedio = parseFloat((total / lastCotizacions.length).toFixed(2));
-      //console.log(`promedio del DIA ${codEmp} :`,promedio)
-
-      return promedio
-
+      const total = lastCotizacions.reduce((acc, el) => acc + Number(el.cotizacion), 0);
+      return parseFloat((total / lastCotizacions.length).toFixed(2));
     } catch (error) {
-      console.error('Error al calcular el promedio:', error);
+      console.error('Error al calcular el promedio del día:', error);
       return 0;
     }
-
   }
 
-
-  async calcularPromedioMes(codEmp: string): Promise<number> {
-    let nowDate = DateMomentUtils.getLastDateCotizacion();
-    //console.log(nowDate)
-    let last30Days=DateMomentUtils.quitarDiasAfechaActual(30)
-    //console.log(last30Days)
+  async calcularPromedioMes(codEmp: string): Promise<number | null> {
+    const nowDate = DateMomentUtils.getLastDateCotizacion();
+    const last30Days = DateMomentUtils.quitarDiasAfechaActual(30);
 
     try {
-      //console.log('codEmp:', codEmp);
       const empresa = await this.empresaRepository.findOne({
         where: { codEmpresa: codEmp },
       });
@@ -329,43 +308,101 @@ export class CotizacionesService {
         return null;
       }
 
-      // Obtén cotizaciones para la fecha actual
-      let lastCotizacions = await this.cotizacionRepository.find({
+      const lastCotizacions = await this.cotizacionRepository.find({
         where: {
-          empresa: Equal(empresa.codEmpresa),
           fecha: Between(last30Days.fecha, nowDate.fecha),
+          empresa: Equal(codEmp),
         },
         order: { id: "ASC" },
       });
 
-      // Si aún no hay cotizaciones, retorna null
       if (lastCotizacions.length === 0) {
-        console.log(`No se encontraron cotizaciones para el código de empresa ${codEmp} en las fechas recientes.`);
+        console.log(`No se encontraron cotizaciones para ${codEmp} en las fechas recientes.`);
         return null;
       }
 
-      let total = 0;
-      for (const element of lastCotizacions) {
-        total += Number(element.cotizacion)
-      }
-      const promedio = parseFloat((total / lastCotizacions.length).toFixed(2));
-      //console.log(`promedio del MES ${codEmp} :`,promedio)
-
-      return promedio
-
+      const total = lastCotizacions.reduce((acc, el) => acc + Number(el.cotizacion), 0);
+      return parseFloat((total / lastCotizacions.length).toFixed(2));
     } catch (error) {
-      console.error('Error al calcular el promedio:', error);
+      console.error('Error al calcular el promedio del mes:', error);
       return 0;
     }
   }
 
-  async cantidadAcciones(codEmp: string): Promise<number|null> {
+  async cantidadAcciones(codEmp: string): Promise<number | null> {
     const empresa = await this.empresaRepository.findOne({
       where: { codEmpresa: codEmp },
-    })
-    //console.log(`cantidadAcciones ${codEmp} :`,empresa.cantidadAcciones)
-    return empresa.cantidadAcciones
+    });
+    return empresa ? empresa.cantidadAcciones : null;
   }
+
+
+
+
+
+
+
+  //          PARA FRONT 
+  //          PARA FRONT 
+  //          PARA FRONT 
+  //          PARA FRONT 
+  //          PARA FRONT 
+  //          PARA FRONT 
+  //          PARA FRONT 
+  //          PARA FRONT 
+
+  async getlastCotizacionCard(codEmp: string): Promise<ICotizacionCard> {
+    try {
+      const empresa = await this.empresaRepository.findOne({
+        where: { codEmpresa: codEmp },
+      })
+      if (!empresa) {
+        console.log(`No se encontró una empresa con codEmpresa: ${codEmp}`);
+        return null;
+      }
+      const lastCotizacion: Cotizacion[] = await this.cotizacionRepository.find(
+        {
+          where: { empresa: Equal(empresa.codEmpresa) },
+          order: { id: "DESC" },
+          take: 2,
+        })
+      const cambioPorcentual = ((lastCotizacion[0].cotizacion - lastCotizacion[1].cotizacion) / lastCotizacion[1].cotizacion) * 100
+      const card: ICotizacionCard = {
+        codEmpresa: codEmp,
+        nombreEmpresa: empresa.nombreEmpresa,
+        valorActual: lastCotizacion[0].cotizacion,
+        fluctuacion: parseFloat(cambioPorcentual.toFixed(3)),
+      };
+      return card
+    }
+    catch (error) {
+      console.error("Error getlastCotizacionCard:", error);
+      return null;
+    }
+  }
+  async getallCotizacions(codEmp: string): Promise<Cotizacion[]> {
+    try {
+      const empresa = await this.empresaRepository.findOne({
+        where: { codEmpresa: codEmp },
+      })
+      if (!empresa) {
+        console.log(`No se encontró una empresa con codEmpresa: ${codEmp}`);
+        return null;
+      }
+      const lastCotizacions: Cotizacion[] = await this.cotizacionRepository.find(
+        {
+          where: { empresa: Equal(empresa.codEmpresa) },
+          order: { id: "DESC" },
+        })
+
+      return Promise.all(lastCotizacions)
+    }
+    catch (error) {
+      console.error("Error getlastCotizacionCard:", error);
+      return null;
+    }
+  }
+
 
 
 }

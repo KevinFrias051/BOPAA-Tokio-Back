@@ -17,7 +17,6 @@ export class IndiceService {
     } catch (error) {
       console.error('El indice ya existe', 409)
     }
-    
   }
 
   async findIndiceByCod(code: string): Promise<Indice> {
@@ -25,7 +24,7 @@ export class IndiceService {
       const indiceCotizacion:Indice = await this.indiceRepository.findOne({
         where: { codeIndice: code },
       })
-      console.log('indiceCotizacion:',indiceCotizacion)
+      //console.log('indiceCotizacion:',indiceCotizacion)
       return indiceCotizacion
     } catch (error) {
       console.error("Error buscando indice Cotizacion:", error);
@@ -45,7 +44,7 @@ export class IndiceService {
             indice.name,
             indice.__v,
           );
-          console.log('newIndice:',newIndice)  
+          /* console.log('newIndice:',newIndice)   */
           await this.indiceRepository.save(newIndice);
           return newIndice
         }else{
@@ -58,4 +57,19 @@ export class IndiceService {
     return respuesta.data;
 }
 
+///////TRAER TODOS LOS CODIGOS DE MIS INDICES
+async getAllcodsindices():Promise<string[]>{
+  try {
+    const empresas:Indice[]=await this.indiceRepository.find({ })
+    const arrCodigos: string[] = [];
+    empresas.map((cod)=>{
+      arrCodigos.push(cod.codeIndice);
+    })
+    console.log('codigos indice:',arrCodigos)
+    return arrCodigos
+  } catch (error) {
+    console.error("Error buscando indices:", error);
+    throw error;
+  }
+}
 }

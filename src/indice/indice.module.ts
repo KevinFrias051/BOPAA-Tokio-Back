@@ -8,5 +8,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   imports: [TypeOrmModule.forFeature([Indice])],
   controllers: [IndiceController],
   providers: [IndiceService],
+  exports:[IndiceService]
 })
 export class IndiceModule {}

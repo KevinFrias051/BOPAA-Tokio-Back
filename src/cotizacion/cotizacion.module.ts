@@ -4,9 +4,10 @@ import { Cotizacion } from './entities/cotizacion.entity';
 import { CotizacionesController } from './cotizacion.controller';
 import { CotizacionesService } from './cotizacion.service';
 import { Empresa } from 'src/empresa/entities/empresa.entity';
+import { EmpresaModule } from 'src/empresa/empresa.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Cotizacion,Empresa])],
+  imports: [TypeOrmModule.forFeature([Cotizacion,Empresa]),EmpresaModule],
   controllers: [CotizacionesController],
   providers: [CotizacionesService],
   exports: [CotizacionesService],
