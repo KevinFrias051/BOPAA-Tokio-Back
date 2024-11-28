@@ -32,21 +32,21 @@ class DateMomentUtils {
 
   static quitarDiasAfechaActual(dias: number): IFecha {
     const date = new Date();
-    date.setDate(date.getDate() - dias); // Restar los días especificados
+    date.setDate(date.getDate() - dias);
     date.setMinutes(0);
-    
+
     const fecha = date.toISOString();
     const horaTz = momentTZ.tz(
       `${fecha}`,
       DateMomentUtils.TIMEZONE,
     );
-    
+
     const fechaStr = horaTz.format();
     return {
       fecha: fechaStr.substring(0, 10),
       hora: fechaStr.substring(11, 16),
     };
-}
+  }
 
 
   //FECHA YYYY-MM-DD T HH-MM
@@ -69,7 +69,6 @@ class DateMomentUtils {
 
   //Convierte una fecha UTC a una fecha GMT+9 con hora 08:00
   static cotDia(fecha: string): string {
-    //const horaTz = momentTZ.tz(`${fecha}T08:00`, DateMomentUtils.TIMEZONE);
     const fechaDate = new Date(DateMomentUtils.setHoraFechaString(fecha));
     const fechaStr = fechaDate.toISOString().substring(0, 16);
     return fechaStr
@@ -87,7 +86,7 @@ class DateMomentUtils {
   //Suma una cantidad de horas a una fecha
   static sumaHoras(fecha: string, horas: number): string {
     const fechaDate = new Date(DateMomentUtils.setHoraFechaString(fecha));
-    fechaDate.setTime(fechaDate.getTime() + (horas * 60 * 60 * 1000));    
+    fechaDate.setTime(fechaDate.getTime() + (horas * 60 * 60 * 1000));
     const fechaStr = fechaDate.toISOString().substring(0, 16);
     return fechaStr
   }
@@ -109,9 +108,6 @@ class DateMomentUtils {
       hora: fechaStr.substring(11, 16),
     };
   }
-
-  
-
 }
 
 export default DateMomentUtils;

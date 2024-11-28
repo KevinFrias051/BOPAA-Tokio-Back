@@ -16,7 +16,14 @@ export class IndiceController {
 
   @Post()
   async createIndice(@Body() body: { code: string; name: string },): Promise<void> {
-    console.log('entro post')
     await this.indiceService.createIndice(body);
   }
+
+
+  @Get('/getAllcodsIndice')
+  async getAllCodsIndices(): Promise<string[]> {
+    await this.indiceService.saveAllIndicesDb()
+    return await this.indiceService.getAllcodsindices()
+  }
 }
+

@@ -1,12 +1,6 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  DeleteResult,
-  FindOneOptions,
-  FindOptionsWhere,
-  Repository,
-  UpdateResult,
-} from 'typeorm';
+import { Repository } from 'typeorm';
 import { Empresa } from './entities/empresa.entity';
 import { AxiosResponse } from 'axios';
 import clienteAxios from 'axios';
@@ -25,25 +19,23 @@ export class EmpresaService {
   async getEmpresa(): Promise<Empresa> {
     try {
       const respuesta: AxiosResponse<any, any> = await clienteAxios.get(baseURL)
-      console.log('respuesta.data:',respuesta.data)
       return respuesta.data
     } catch (error) {
-
     }
   }
-  async getEmpresaByCod(codEmpresa:string): Promise<Empresa> {
+
+  async getEmpresaByCod(codEmpresa: string): Promise<Empresa> {
     try {
       const respuesta: AxiosResponse<any, any> = await clienteAxios.get(`${baseURL}/empresas/${codEmpresa}/details`)
-
-      console.log('respuesta.data:',respuesta.data)
+      console.log('respuesta.data:', respuesta.data)
       return respuesta.data
     } catch (error) {
     }
   }
 
-  async saveEmpresaDbByCod(codEmpresa:string): Promise<Empresa> {
+  async saveEmpresaDbByCod(codEmpresa: string): Promise<Empresa> {
     try {
-      if(await this.findEmpresaDbByCod(codEmpresa) == null){
+      if (await this.findEmpresaDbByCod(codEmpresa) == null) {
         const respuesta: AxiosResponse<any, any> = await clienteAxios.get(`${baseURL}/empresas/${codEmpresa}/details`)
         const empresa = new Empresa(
           respuesta.data.codempresa,
@@ -52,11 +44,9 @@ export class EmpresaService {
           respuesta.data.cantidadAcciones
         );
         const savedEmpresa = await this.empresaRepository.save(empresa)
-
-        console.log('Empresa guardada:(emp.service.back)', savedEmpresa);
         return savedEmpresa;
       }
-      else{
+      else {
         console.log('La empresa ya existe en la base de datos')
       }
     } catch (error) {
@@ -66,24 +56,23 @@ export class EmpresaService {
   }
 
   async saveEmpresas(): Promise<void> {
-    const arrCodigosEmpresas = await this.getAllcodsEmpresa()
 
+    const arrCodigosEmpresas = ['GOOGL', 'NVDA', 'NESN.SW', 'KO', 'BA', 'WMT', 'SHEL'];
+    //const arrCodigosEmpresas = await this.getAllcodsEmpresa()
     try {
-        // Ciclo secuencial para guardar las empresas
-        for (const codEmpresa of arrCodigosEmpresas) {
-            await this.saveEmpresaDbByCod(codEmpresa);  // Llamamos a la función asincrónica para cada empresa
-        }
-
-        console.log('Todas las empresas fueron guardadas correctamente.');
+      for (const codEmpresa of arrCodigosEmpresas) {
+        await this.saveEmpresaDbByCod(codEmpresa);
+      }
+      console.log('Todas las empresas fueron guardadas correctamente.');
     } catch (error) {
-        console.error('Error al guardar las empresas:', error);
+      console.error('Error al guardar las empresas:', error);
     }
-}
+  }
 
-  async findEmpresaDbByCod(codEmp:string): Promise<Empresa>{
+  async findEmpresaDbByCod(codEmp: string): Promise<Empresa> {
     try {
-      const empresas:Empresa=await this.empresaRepository.findOne({
-        where:{codEmpresa: codEmp},
+      const empresas: Empresa = await this.empresaRepository.findOne({
+        where: { codEmpresa: codEmp },
       })
       return empresas
     } catch (error) {
@@ -92,10 +81,10 @@ export class EmpresaService {
     }
   }
 
-  async findEmpresas(): Promise<Empresa[]>{
+  async findEmpresas(): Promise<Empresa[]> {
     console.log('entro a find empresas')
     try {
-      const empresas:Empresa[]=await this.empresaRepository.find({
+      const empresas: Empresa[] = await this.empresaRepository.find({
       })
       return empresas
     } catch (error) {
@@ -104,13 +93,11 @@ export class EmpresaService {
     }
   }
 
-
-  ///////TRAER TODOS LOS CODIGOS DE MIS EMPRESAS
-  async getAllcodsEmpresa():Promise<string[]>{
+  async getAllcodsEmpresa(): Promise<string[]> {
     try {
-      const empresas:Empresa[]=await this.empresaRepository.find({ })
+      const empresas: Empresa[] = await this.empresaRepository.find({})
       const arrCodigos: string[] = [];
-      empresas.map((cod)=>{
+      empresas.map((cod) => {
         arrCodigos.push(cod.codEmpresa);
       })
       return arrCodigos
@@ -119,6 +106,4 @@ export class EmpresaService {
       throw error;
     }
   }
-
-
 }

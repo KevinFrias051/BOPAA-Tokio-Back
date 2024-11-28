@@ -1,8 +1,7 @@
-import { Body, Controller, Get, Logger, Param, Query } from "@nestjs/common";
+import { Controller, Get, Logger, Param, Query } from "@nestjs/common";
 import { CotizacionesService } from "./cotizacion.service";
 import { Cotizacion } from "./entities/cotizacion.entity";
 import DateMomentUtils from "src/utils/dateMomentsUtils";
-import { IFecha } from "src/model/fecha.model";
 import { ICotizacionCard } from "./model/iCotizacion";
 import { EmpresaService } from "src/empresa/empresa.service";
 
@@ -10,27 +9,6 @@ import { EmpresaService } from "src/empresa/empresa.service";
 export class CotizacionesController {
   constructor(private cotizacionesService: CotizacionesService, private readonly empresaService: EmpresaService) { }
   private readonly logger = new Logger(CotizacionesController.name);
-
-  /* METODOS UTC */
-
-  @Get('/UTC/:codEmpresa')
-  public getCotizacionesEntreFechasByCodEmpUCT(@Param('codEmpresa') codEmpresa: string,
-    @Query('grFecha') grFecha: string,
-    @Query('lrFecha') lrFecha: string,
-  ): Promise<Cotizacion[]> {
-    return this.cotizacionesService.getCotizacionesEntreFechasByCodEmpUCT(codEmpresa, grFecha, lrFecha);
-  }
-
-  @Get('/cotizacion/:codEmpresa')
-  public getCotizacionByFechaHora(@Param('codEmpresa') codEmpresa: string,
-    @Query('fecha') fecha: string,
-    @Query('hora') hora: string,
-  ): Promise<Cotizacion> {
-    return this.cotizacionesService.getCotizacionByFechaHora(codEmpresa, fecha, hora)
-  }
-
-
-  /* METODOS GMT */
 
   //Traer cotizaciones del DIA entre Fechas GMT
   //a partir de las fechas seleccionada, trae todas las cotizaciones correspoindientes filtradas
@@ -58,7 +36,6 @@ export class CotizacionesController {
   public async getlastCotizacion(
     @Param('codEmpresa') codEmpresa: string
   ): Promise<ICotizacionCard> {
-    await this.getLastCotizacion()
     return await this.cotizacionesService.getlastCotizacionCard(codEmpresa)
   }
 
@@ -68,7 +45,6 @@ export class CotizacionesController {
   public async getallCotizacions(
     @Param('codEmpresa') codEmpresa: string
   ): Promise<Cotizacion[]> {
-    await this.getLastCotizacion()
     return await this.cotizacionesService.getallCotizacions(codEmpresa)
   }
 
@@ -84,27 +60,17 @@ export class CotizacionesController {
   }
 
 
-
-
-
   @Get('/participacionBolsa')
   public async getCotizacion(): Promise<any> {
     await this.getLastCotizacion();
-  
     const participacionesDia = await this.cotizacionesService.calcularParticipaciones('DIA');
     const participacionesMes = await this.cotizacionesService.calcularParticipaciones('MES');
-  
     const resultado = [
       ...participacionesDia.map(p => ({ ...p, tipo: 'DIA' })),
       ...participacionesMes.map(p => ({ ...p, tipo: 'MES' })),
     ];
-  
     console.log(resultado);
     return resultado;
   }
-
-
-  //falta postear mis indices 
-  //falta enviar al front todos los indices
 
 }

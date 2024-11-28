@@ -4,14 +4,12 @@ import clienteAxios, { AxiosResponse } from 'axios';
 import { baseURL } from 'src/services/axios/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { IFecha } from 'src/model/fecha.model';
-import DateMomentUtils from 'src/utils/dateMomentsUtils';
 
 @Injectable()
 export class IndiceService {
-  constructor(@InjectRepository(Indice) private readonly indiceRepository: Repository<Indice>){}
-  
-  async createIndice(body):Promise<void>{
+  constructor(@InjectRepository(Indice) private readonly indiceRepository: Repository<Indice>) { }
+
+  async createIndice(body): Promise<void> {
     try {
       await clienteAxios.post(`${baseURL}/indices`, body)
     } catch (error) {
@@ -21,10 +19,9 @@ export class IndiceService {
 
   async findIndiceByCod(code: string): Promise<Indice> {
     try {
-      const indiceCotizacion:Indice = await this.indiceRepository.findOne({
+      const indiceCotizacion: Indice = await this.indiceRepository.findOne({
         where: { codeIndice: code },
       })
-      //console.log('indiceCotizacion:',indiceCotizacion)
       return indiceCotizacion
     } catch (error) {
       console.error("Error buscando indice Cotizacion:", error);
@@ -34,42 +31,39 @@ export class IndiceService {
 
   public async saveAllIndicesDb(): Promise<Indice[]> {
     const respuesta: AxiosResponse<any, any> = await clienteAxios.get(`${baseURL}/indices`);
-    console.log('respuesta.data:',respuesta.data)  
+    console.log('respuesta.data:', respuesta.data)
     const promesasGuardado = respuesta.data.map(async (indice) => {
-        if (await this.findIndiceByCod(indice.code) == null) {
-          console.log('indice.data:',indice)  
-          const newIndice = new Indice(
-            indice.id,
-            indice.code,
-            indice.name,
-            indice.__v,
-          );
-          /* console.log('newIndice:',newIndice)   */
-          await this.indiceRepository.save(newIndice);
-          return newIndice
-        }else{
-          console.log(`El indice code: ${indice.code} ya existe en la db`)
-        }
+      if (await this.findIndiceByCod(indice.code) == null) {
+        const newIndice = new Indice(
+          indice.id,
+          indice.code,
+          indice.name,
+          indice.__v,
+        );
+        await this.indiceRepository.save(newIndice);
+        return newIndice
+      } else {
+        console.log(`El indice code: ${indice.code} ya existe en la db`)
       }
-      );
-  
-      await Promise.all(promesasGuardado);
-    return respuesta.data;
-}
+    }
+    );
 
-///////TRAER TODOS LOS CODIGOS DE MIS INDICES
-async getAllcodsindices():Promise<string[]>{
-  try {
-    const empresas:Indice[]=await this.indiceRepository.find({ })
-    const arrCodigos: string[] = [];
-    empresas.map((cod)=>{
-      arrCodigos.push(cod.codeIndice);
-    })
-    console.log('codigos indice:',arrCodigos)
-    return arrCodigos
-  } catch (error) {
-    console.error("Error buscando indices:", error);
-    throw error;
+    await Promise.all(promesasGuardado);
+    return respuesta.data;
   }
-}
+
+  //TRAE TODOS LOS CODIGOS DE MIS INDICES
+  async getAllcodsindices(): Promise<string[]> {
+    try {
+      const empresas: Indice[] = await this.indiceRepository.find({})
+      const arrCodigos: string[] = [];
+      empresas.map((cod) => {
+        arrCodigos.push(cod.codeIndice);
+      })
+      return arrCodigos
+    } catch (error) {
+      console.error("Error buscando indices:", error);
+      throw error;
+    }
+  }
 }

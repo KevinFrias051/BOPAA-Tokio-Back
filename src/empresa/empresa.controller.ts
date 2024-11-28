@@ -1,12 +1,9 @@
 import {
-  Body,
   Controller,
-  Delete,
   Get,
-  NotFoundException,
   Param,
   Post,
-  Put,
+  Logger
 } from '@nestjs/common';
 import { Empresa } from './entities/empresa.entity';
 import { EmpresaService } from './empresa.service';
@@ -15,13 +12,8 @@ import { EmpresaService } from './empresa.service';
 
 export class EmpresaControllers {
   constructor(private readonly empresaService: EmpresaService) { }
+  private readonly logger = new Logger(EmpresaControllers.name);
 
-
-
-/*   @Get('/:codEmp')
-  async getAll(@Param('codEmp') codEmp: string): Promise<Empresa> {
-    return this.empresaService.getEmpresaByCod(codEmp)
-  } */
 
   @Get('/getAll')
   async getAllEmpresas(): Promise<Empresa[]> {
@@ -41,32 +33,28 @@ export class EmpresaControllers {
   @Get('/buscar/db')
   async findEmpresas(): Promise<Empresa[]> {
     try {
-      console.log('entro')
-      console.log('this.empresaService.findEmpresas():',await this.empresaService.findEmpresas())
-      return await this.empresaService.findEmpresas();    
+      return await this.empresaService.findEmpresas();
     } catch (error) {
       console.error(error)
     }
   }
 
-
   @Post('/saveall')
   async saveEmpresasDb(): Promise<void> {
     console.log("Todas las empresas");
     const arrCodigosEmpresas = await this.getAllcodsEmpresa()
-
     try {
       for (const codigo of arrCodigosEmpresas) {
-        await this.empresaService.saveEmpresaDbByCod(codigo); 
-    }
-      console.log("Todas las empresas fueron guardadas correctamente.");
+        await this.empresaService.saveEmpresaDbByCod(codigo);
+      }
+      this.logger.log("Todas las empresas fueron guardadas correctamente.");
     } catch (error) {
       console.error("Error al guardar las empresas:", error);
     }
   }
 
   @Get('/getAllcodsEmpresa')
-  async getAllcodsEmpresa():Promise<string[]>{
-    return await this.empresaService.getAllcodsEmpresa() 
+  async getAllcodsEmpresa(): Promise<string[]> {
+    return await this.empresaService.getAllcodsEmpresa()
   }
 }
