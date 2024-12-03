@@ -301,7 +301,7 @@ export class CotizacionesService {
           where: { empresa: Equal(empresa.codEmpresa) },
           order: { id: "DESC" },
         })
-      console.log('lastCotizacions:', lastCotizacions)
+      /* console.log('lastCotizacions:', lastCotizacions) */
       return Promise.all(lastCotizacions)
     }
     catch (error) {

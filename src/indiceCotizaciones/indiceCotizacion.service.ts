@@ -65,7 +65,7 @@ export class IndiceCotizacionService {
         const cotizacionesDeLaHora = cotizacionesPorHora[fechaHora];
         const valorIndiceAnterior = ultimoIndice.indiceCotizacion;
         const cambioPromedioIndice = await this.calcularCambioPromedioIndice();
-        const valorIndice = parseFloat((valorIndiceAnterior * (1 + cambioPromedioIndice / 125)).toFixed(2));
+        const valorIndice = parseFloat((valorIndiceAnterior * (1 + cambioPromedioIndice / 566)).toFixed(5));
 
         const fechaCotizacion = cotizacionesDeLaHora[0].fecha;
         const horaCotizacion = cotizacionesDeLaHora[0].hora;

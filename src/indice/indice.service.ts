@@ -31,7 +31,7 @@ export class IndiceService {
 
   public async saveAllIndicesDb(): Promise<Indice[]> {
     const respuesta: AxiosResponse<any, any> = await clienteAxios.get(`${baseURL}/indices`);
-    console.log('respuesta.data:', respuesta.data)
+    /* console.log('respuesta.data:', respuesta.data) */
     const promesasGuardado = respuesta.data.map(async (indice) => {
       if (await this.findIndiceByCod(indice.code) == null) {
         const newIndice = new Indice(

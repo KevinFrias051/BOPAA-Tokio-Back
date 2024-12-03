@@ -48,7 +48,7 @@ export class GenDataService {
     this.logger.log('Ejecución del cron indiceCotizacionesService:', new Date().toISOString());
   }
 
-  @Cron('1 15 * * * *')
+  @Cron('1 10 * * * *')
   //Guarda cotizaciones indices faltantes en db
   async getIndiceCotizaciones() {
     await this.indiceCotizacionesService.saveAllIndicesCotizacion()
