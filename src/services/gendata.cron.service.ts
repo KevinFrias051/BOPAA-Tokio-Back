@@ -3,6 +3,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { CotizacionesService } from 'src/cotizacion/cotizacion.service';
+import { EmpresaService } from 'src/empresa/empresa.service';
 import { IndiceService } from 'src/indice/indice.service';
 import { IndiceCotizacionService } from 'src/indiceCotizaciones/indiceCotizacion.service';
 
@@ -12,7 +13,8 @@ export class GenDataService {
   constructor(
     private readonly cotizacionesService: CotizacionesService,
     private readonly indiceService:IndiceService,
-    private readonly indiceCotizacionesService:IndiceCotizacionService
+    private readonly indiceCotizacionesService:IndiceCotizacionService,
+    private readonly empresaService:EmpresaService
     
     ) {
     this.logger.log('Servicio Gen Data Inicializado');
@@ -23,6 +25,11 @@ export class GenDataService {
   //GUARDA TODAS LAS COTIZACIONES FALTANTES EN MI DB
   async getLastCotizaciones() {
     const arrCodigosEmpresas = ['GOOGL', 'NVDA', 'NESN.SW', 'KO', 'BA', 'WMT', 'SHEL'];
+    for (const codigo of arrCodigosEmpresas) {
+      await this.empresaService.saveEmpresaDbByCod(codigo);
+    }
+    this.logger.log("Todas las empresas fueron guardadas correctamente.");
+    
       await Promise.all(arrCodigosEmpresas.map(async (codigo) => {
         console.log('codigo:',codigo)
         await this.cotizacionesService.saveAllCotizacionesDb(codigo);
