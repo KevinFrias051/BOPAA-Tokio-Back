@@ -53,7 +53,7 @@ export class CotizacionesController {
   public async getLastCotizacion(): Promise<void> {
     const arrCodigosEmpresas = await this.empresaService.getAllcodsEmpresa()
     await Promise.all(arrCodigosEmpresas.map(async (codigo) => {
-      console.log('codigo:', codigo)
+      /* console.log('codigo:', codigo) */
       await this.cotizacionesService.saveAllCotizacionesDb(codigo);
     }));
     this.logger.log('Todas las cotizaciones se han guardado correctamente.');
@@ -69,7 +69,7 @@ export class CotizacionesController {
       ...participacionesDia.map(p => ({ ...p, tipo: 'DIA' })),
       ...participacionesMes.map(p => ({ ...p, tipo: 'MES' })),
     ];
-    console.log(resultado);
+    /* console.log(resultado); */
     return resultado;
   }
 

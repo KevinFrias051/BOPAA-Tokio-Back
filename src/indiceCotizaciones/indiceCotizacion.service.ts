@@ -37,7 +37,7 @@ export class IndiceCotizacionService {
         if (!indiceBase) throw new Error("No se encontró el índice base con codeIndice 'TSE' en la base de datos.");
         ultimoIndice = new IndiceCotizacion('2024-01-01', '09:00', 1, indiceBase);
         await this.indiceCotizacionRepository.save(ultimoIndice);
-        console.log(`Índice inicial creado con fecha: ${ultimoIndice.fecha} y hora: ${ultimoIndice.hora}`);
+        /* console.log(`Índice inicial creado con fecha: ${ultimoIndice.fecha} y hora: ${ultimoIndice.hora}`); */
       }
 
       const fechaDesde = `${ultimoIndice.fecha} ${ultimoIndice.hora}`;
@@ -75,7 +75,7 @@ export class IndiceCotizacionService {
         //ACA GUARDA EN MI DB (solo para pruebas)
         //await this.indiceCotizacionRepository.save(nuevoIndice);
 
-        console.log(`Índice consolidado guardado para fecha: ${nuevoIndice.fecha} y hora: ${nuevoIndice.hora}`);
+        /* console.log(`Índice consolidado guardado para fecha: ${nuevoIndice.fecha} y hora: ${nuevoIndice.hora}`); */
         ultimoIndice = nuevoIndice;
 
         const body = {
@@ -235,7 +235,7 @@ export class IndiceCotizacionService {
       respuesta.data.forEach(indice => {
         indices.push(indice.code)
       })
-      console.log(indices)
+      /* console.log(indices) */
       return indices
     }
     catch (error) {

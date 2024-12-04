@@ -2,14 +2,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { CotizacionesController } from 'src/cotizacion/cotizacion.controller';
 import { CotizacionesService } from 'src/cotizacion/cotizacion.service';
-import { Cotizacion } from 'src/cotizacion/entities/cotizacion.entity';
-import { EmpresaService } from 'src/empresa/empresa.service';
-import { Empresa } from 'src/empresa/entities/empresa.entity';
-import { Indice } from 'src/indice/entities/indice.entity';
 import { IndiceService } from 'src/indice/indice.service';
-import { IndiceCotizacion } from 'src/indiceCotizaciones/entities/indiceCotizacion.entity';
 import { IndiceCotizacionService } from 'src/indiceCotizaciones/indiceCotizacion.service';
 
 @Injectable()

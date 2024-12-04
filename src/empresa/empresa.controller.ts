@@ -41,7 +41,7 @@ export class EmpresaControllers {
 
   @Post('/saveall')
   async saveEmpresasDb(): Promise<void> {
-    console.log("Todas las empresas");
+    /* console.log("Todas las empresas"); */
     const arrCodigosEmpresas = await this.getAllcodsEmpresa()
     try {
       for (const codigo of arrCodigosEmpresas) {

@@ -6,12 +6,13 @@ async function bootstrap() {
 
 
   app.enableCors({
-    origin: 'http://localhost:3000',
+    origin: '*', 
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], 
     allowedHeaders: ['Content-Type', 'Authorization'], 
   });
+  
 
-  await app.listen(8080);
-  console.log('Servidor corriendo en http://localhost:8080');
+  await app.listen(3001);
+  console.log('Servidor corriendo en http://localhost:3001');
 }
 bootstrap();

@@ -27,7 +27,7 @@ export class EmpresaService {
   async getEmpresaByCod(codEmpresa: string): Promise<Empresa> {
     try {
       const respuesta: AxiosResponse<any, any> = await clienteAxios.get(`${baseURL}/empresas/${codEmpresa}/details`)
-      console.log('respuesta.data:', respuesta.data)
+      /* console.log('respuesta.data:', respuesta.data) */
       return respuesta.data
     } catch (error) {
     }
@@ -82,7 +82,7 @@ export class EmpresaService {
   }
 
   async findEmpresas(): Promise<Empresa[]> {
-    console.log('entro a find empresas')
+    /* console.log('entro a find empresas') */
     try {
       const empresas: Empresa[] = await this.empresaRepository.find({
       })
