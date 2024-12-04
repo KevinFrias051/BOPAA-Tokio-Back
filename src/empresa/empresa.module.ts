@@ -8,6 +8,7 @@ import { Empresa } from "./entities/empresa.entity";
   imports: [TypeOrmModule.forFeature([Empresa])],
   controllers: [EmpresaControllers],
   providers: [EmpresaService],
+  exports:[EmpresaService]
 })
 export class EmpresaModule{};
 
