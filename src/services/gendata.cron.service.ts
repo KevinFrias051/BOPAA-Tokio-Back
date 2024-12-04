@@ -31,11 +31,16 @@ export class GenDataService {
   }
 
 
-  @Cron('1 5 * * * *')
-  async postIndiceCotizacion() {
+  @Cron('1 4 * * * *')
+  async getIndiceCotizacion() {
     //guarda todos los indices de gempresa en db
     await this.indiceService.saveAllIndicesDb();
     this.logger.log('guardado los indices en db')
+  }
+
+  @Cron('1 5 * * * *')
+  async postIndiceCotizacion() {
+
     //Calcula mis indices faltantes y los postea a gempresa
     await this.indiceCotizacionesService.calcularIndicesFaltantes()
     this.logger.log('Calculado y posteado indices TSE en gempresa')
